@@ -217,8 +217,8 @@
       📖 What does each term mean?
     </button>
     <div id="ans3" class="answer-box" style="margin-top: 0.8rem; border-left-color: #38bdf8;">
-      <p><b>Left equation:</b> αx (natural growth) − βxy (hunting reduces trees)</p>
-      <p><b>Right equation:</b> −γy (starvation) + δxy (feeding produces lumberjacks)</p>
+      <p><b>Top equation:</b> αx (natural growth) − βxy (hunting reduces trees)</p>
+      <p><b>Bottom equation:</b> −γy (starvation) + δxy (feeding produces lumberjacks)</p>
     </div>
   </section>
 
