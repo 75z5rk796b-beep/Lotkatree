@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=960, initial-scale=1.0">
+  <title>Lotka-Volterra Interactive Presentation</title>
+  <style>
+  :root {
+    --font-family-display: Arial, sans-serif;
+    --font-weight-display: 600;
+    --font-family-content: Arial, sans-serif;
+    --font-weight-content: 400;
+    --font-size-content: 16px;
+    --line-height-content: 1.4;
+  }
+  body.theme-dark {
+    --color-bg-base: #0f172a;
+    --color-bg-elevated: #020617;
+    --color-bg-surface: #1e293b;
+    --color-bg-muted: #334155;
+    --color-text-primary: #f1f5f9;
+    --color-text-secondary: #cbd5e1;
+    --color-text-muted: #94a3b8;
+    --color-text-accent: #38bdf8;
+    --color-primary: #38bdf8;
+    --color-primary-foreground: #0f172a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--font-family-content);
+    font-weight: var(--font-weight-content);
+    font-size: var(--font-size-content);
+    line-height: var(--line-height-content);
+    overflow-x: hidden;
+  }
+  .slide {
+    width: 960px; height: 540px;
+    margin: 0 auto 20px;
+    display: flex; flex-shrink: 0; position: relative;
+    overflow: hidden;
+  }
+  .row { flex-direction: row; }
+  .col { flex-direction: column; }
+  .center { justify-content: center; align-items: center; text-align: center;}
+  .space-between { justify-content: space-between; }
+  .items-center { align-items: center; }
+  .items-start { align-items: flex-start; }
+  .items-end { align-items: flex-end; }
+  .fill-width { flex: 1; }
+  .fill-height { flex: 1; display: flex; flex-direction: column; }
+  .gap-sm { gap: 0.5rem; }
+  .gap-md { gap: 1rem; }
+  .gap-lg { gap: 1.5rem; }
+  .gap-xl { gap: 2rem; }
+  .gap-2xl { gap: 3rem; }
+  .p-4 { padding: 1rem; }
+  .p-6 { padding: 1.5rem; }
+  .p-8 { padding: 2rem; }
+  .p-12 { padding: 3rem; }
+  .p-16 { padding: 4rem; }
+  .mb-2 { margin-bottom: 0.5rem; }
+  .mb-4 { margin-bottom: 1rem; }
+  .mb-6 { margin-bottom: 1.5rem; }
+  .mb-8 { margin-bottom: 2rem; }
+  .mt-2 { margin-top: 0.5rem; }
+  .mt-4 { margin-top: 1rem; }
+  .mt-6 { margin-top: 1.5rem; }
+  .mt-8 { margin-top: 2rem;}
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family-display);
+    font-weight: var(--font-weight-display);
+    line-height: 1.2;
+    margin: 0;
+  }
+  h1 { font-size: 3rem; }
+  h2 { font-size: 2.25rem; }
+  h3 { font-size: 1.75rem; }
+  .text-6xl { font-size: 3.75rem; }
+  .text-4xl { font-size: 2.25rem; }
+  .text-2xl { font-size: 1.5rem; }
+  .text-xl { font-size: 1.25rem; }
+  .text-lg { font-size: 1.125rem; }
+  .text-sm { font-size: 0.875rem; }
+  .text-xs { font-size: 0.75rem; }
+  .font-bold { font-weight: 700; }
+  .font-semibold { font-weight: 600; }
+  .text-center { text-align: center; }
+  ul { margin-left: 2rem; line-height: 1.8; }
+  ul li { list-style: disc; margin-bottom: 0.5rem; }
+  li:last-child { margin-bottom: 0; }
+  svg { max-width: 100%; height: auto; }
+  .interactive-box {
+    background-color: #1e293b;
+    border: 2px solid #38bdf8;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border-radius: 0px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .interactive-box:hover {
+    background-color: #334155;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+  }
+  .question-box {
+    background-color: #1e293b;
+    border-left: 4px solid #f59e0b;
+    padding: 1rem;
+    margin: 0.5rem 0;
+  }
+  .answer-box {
+    background-color: #334155;
+    border-left: 4px solid #10b981;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    display: none;
+  }
+  .answer-box.show {
+    display: block;
+  }
+  button {
+    background-color: #38bdf8;
+    color: #0f172a;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 0px;
+    cursor: pointer;
+    margin: 0.5rem 0.25rem;
+    transition: all 0.2s ease;
+  }
+  button:hover {
+    background-color: #7dd3fc;
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
+  }
+  .poll-option {
+    background-color: #1e293b;
+    border: 1px solid #cbd5e1;
+    padding: 0.8rem;
+    margin: 0.5rem 0;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+  .poll-option:hover {
+    background-color: #38bdf8;
+    color: #0f172a;
+  }
+  iframe {
+    width: 100%;
+    height: 480px;
+    border: 2px solid #38bdf8;
+    border-radius: 0px;
+  }
+  </style>
+</head>
+<body class="theme-dark">
+
+  <!-- Slide 1: Problématique Interactive -->
+  <section class="slide p-16 col center" style="background-color: #020617; color: #f1f5f9;">
+    <h1 class="text-5xl mb-4" style="color:#38bdf8;">Will We Always Have Christmas Trees?</h1>
+    <p class="text-2xl mb-8" style="color: #cbd5e1;">Mathematical Analysis of the Lotka–Volterra Model</p>
+    <div style="border-left: 4px solid #38bdf8; padding-left: 1.5rem; text-align: left; max-width: 700px;">
+      <p class="text-lg" style="color:#cbd5e1;">
+        <b>Question:</b> Do fir tree and lumberjack populations oscillate forever? A rigorous analysis using dynamical systems theory.
+      </p>
+    </div>
+    <button onclick="alert('💭 Think about it: What happens if there are many trees but few lumberjacks? What if the opposite?');" style="margin-top: 1.5rem;">
+      💭 Think About It!
+    </button>
+  </section>
+
+  <!-- Slide 2: System Intuition (Interactive) -->
+  <section class="slide p-16 col" style="background-color: #0f172a; color: #f1f5f9;">
+    <h2 class="mb-6" style="color:#38bdf8;">System Intuition: The Feedback Loop</h2>
+    <div class="row gap-lg items-center">
+      <div class="fill-width">
+        <ul class="text-lg" style="color:#cbd5e1;">
+          <li><b>Prey (fir trees):</b> Exponential growth without predators</li>
+          <li><b>Predators (lumberjacks):</b> Decline without prey</li>
+          <li><b>Interactions:</b> Predation reduces prey</li>
+          <li><b>Feedback loop:</b> Perpetual cycles</li>
+        </ul>
+        <div class="question-box" style="margin-top: 1rem;">
+          <p style="color: #f59e0b;"><b>❓ Poll: Which population grows first?</b></p>
+          <div class="poll-option" onclick="this.style.backgroundColor='#10b981'; this.textContent='✓ Trees grow first (then lumberjacks follow)!';">
+            A) Trees
+          </div>
+          <div class="poll-option" onclick="this.style.backgroundColor='#ef4444'; this.textContent='✗ Lumberjacks come first';">
+            B) Lumberjacks
+          </div>
+        </div>
+      </div>
+      <div class="fill-width" style="text-align: center;">
+        <img src="https://pplx-res.cloudinary.com/image/upload/v1764093774/search_images/645dc8ca67dc2efe475c78913c95c6d5a95a7dbe.jpg" alt="Analogie" style="max-height:150px;">
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 3: System of Differential Equations -->
+  <section class="slide p-16 col" style="background-color: #0f172a; color: #f1f5f9;">
+    <h2 class="mb-4" style="color:#38bdf8;">The System of Differential Equations</h2>
+    <div style="background-color: #1e293b; padding: 1.5rem; margin-bottom: 1rem; border-radius: 0px; text-align: center;">
+      <p class="text-lg" style="color:#cbd5e1; margin-bottom: 0.8rem;">
+        With <b>x</b> = fir trees (prey), <b>y</b> = lumberjacks (predators)
+      </p>
+      <p class="text-xl" style="color:#38bdf8; font-family: monospace; line-height: 1.8;">
+        dx/dt = αx − βxy<br>
+        dy/dt = −γy + δxy
+      </p>
+    </div>
+    <p class="text-lg" style="color:#cbd5e1;">
+      <b>Implicit assumptions:</b> continuous populations, no age structure, interactions proportional to x·y
+    </p>
+    <button onclick="document.getElementById('ans3').classList.toggle('show');" style="margin-top: 0.8rem;">
+      📖 What does each term mean?
+    </button>
+    <div id="ans3" class="answer-box" style="margin-top: 0.8rem; border-left-color: #38bdf8;">
+      <p><b>Left equation:</b> αx (natural growth) − βxy (hunting reduces trees)</p>
+      <p><b>Right equation:</b> −γy (starvation) + δxy (feeding produces lumberjacks)</p>
+    </div>
+  </section>
+
+  <!-- Slide 4: Equilibrium Points (Theorem 1) -->
+  <section class="slide p-16 col" style="background-color: #0f172a; color: #f1f5f9;">
+    <h2 class="mb-6" style="color:#38bdf8;">Theorem 1: Equilibrium Points</h2>
+    <p class="text-lg mb-4" style="color:#cbd5e1;">
+      <b>Find:</b> dx/dt = 0 and dy/dt = 0 simultaneously
+    </p>
+    <div style="background-color: #1e293b; padding: 1.5rem; margin-bottom: 1rem; text-align: center;">
+      <p class="text-lg" style="color:#cbd5e1; margin-bottom: 0.5rem;">Two singular points:</p>
+      <p class="text-xl" style="color:#38bdf8; font-family: monospace; line-height: 1.8;">
+        E₁ = (0, 0) &nbsp; &nbsp; total extinction<br>
+        E₂ = (γ/δ, α/β) &nbsp; stable coexistence
+      </p>
+    </div>
+    <ul class="text-lg" style="color:#cbd5e1;">
+      <li><b>E₁</b>: saddle point — unstable</li>
+      <li><b>E₂</b>: center for linearized system — closed orbits!</li>
+    </ul>
+  </section>
+
+  <!-- Slide 5: Conserved First Integral (Theorem 2) -->
+  <section class="slide p-16 col" style="background-color: #0f172a; color: #f1f5f9;">
+    <h2 class="mb-6" style="color:#38bdf8;">Theorem 2: Conserved First Integral (Energy)</h2>
+    <p class="text-lg mb-4" style="color:#cbd5e1;">
+      <b>Lyapunov Function:</b> H(x,y) remains constant along each trajectory
+    </p>
+    <div style="background-color: #1e293b; padding: 1.5rem; margin-bottom: 1rem; text-align: center;">
+      <p class="text-lg" style="color:#38bdf8; font-family: monospace; line-height: 1.6;">
+        H(x,y) = δx − γ ln(x) + βy − α ln(y)
+      </p>
+      <p class="text-sm" style="color:#94a3b8; margin-top: 0.5rem;">
+        (This is the "energy" of the system)
+      </p>
+    </div>
+    <div class="question-box" style="margin-top: 1rem;">
+      <p style="color: #f59e0b;"><b>❓ Can you verify: dH/dt = 0?</b></p>
+      <p style="color: #cbd5e1; margin-top: 0.5rem; font-size: 0.9rem;">Hint: Compute dH/dt using chain rule along the trajectories (x(t), y(t))</p>
+    </div>
+    <ul class="text-lg" style="color:#cbd5e1; margin-top: 1rem;">
+      <li>Level sets H = constant are closed curves around E₂</li>
+      <li><b>🔄 Each orbit = eternal closed loop!</b></li>
+    </ul>
+  </section>
+
+  <!-- Slide 6: Linear Stability (Theorem 3) -->
+  <section class="slide p-16 col" style="background-color: #0f172a; color: #f1f5f9;">
+    <h2 class="mb-6" style="color:#38bdf8;">Theorem 3: Linear Stability at E₂</h2>
+    <p class="text-lg mb-3" style="color:#cbd5e1;">
+      <b>Jacobian:</b> J(x,y) = [−βy, α−βy; δy, −γ+δx]
+    </p>
+    <div style="background-color: #1e293b; padding: 1.5rem; margin-bottom: 1rem; text-align: center;">
+      <p class="text-lg" style="color:#cbd5e1; margin-bottom: 0.5rem;">At E₂ = (γ/δ, α/β):</p>
+      <p class="text-xl" style="color:#38bdf8; font-family: monospace; line-height: 1.8;">
+        Tr(J) = 0 &nbsp; &nbsp; Det(J) = αγ &gt; 0<br>
+        ⟹ λ₁,₂ = ±i√(αγ) &nbsp; <b>purely imaginary</b>
+      </p>
+    </div>
+    <p class="text-lg" style="color:#cbd5e1;">
+      <b>Conclusion:</b> E₂ is a <b>center</b> ⟹ closed trajectories, marginal stability!
+    </p>
+  </section>
+
+  <!-- Slide 7: Phase Portrait -->
+  <section class="slide p-16 col" style="background-color: #0f172a; color: #f1f5f9;">
+    <h2 class="mb-4" style="color:#38bdf8;">Phase Portrait: Closed Orbits</h2>
+    <img src="https://pplx-res.cloudinary.com/image/upload/v1764093774/search_images/4e18e690641137491f8e847ef3a9f5b9dd8c5ee6.jpg" alt="Phase portrait" style="display: block; margin: 0 auto; max-height: 280px;">
+    <p class="text-lg" style="color:#cbd5e1; text-align: center; margin-top: 1rem;">
+      <b>Axes:</b> x = trees, y = lumberjacks | <b>Orbits:</b> closed loops around (γ/δ, α/β)
+    </p>
+    <button onclick="alert('🎯 Key insight: The system spirals neither inward nor outward—it cycles eternally!');" style="margin-top: 0.8rem;">
+      💡 What does this mean?
+    </button>
+  </section>
+
+  <!-- Slide 8: Periodicity Proof -->
+  <section class="slide p-16 col" style="background-color: #0f172a; color: #f1f5f9;">
+    <h2 class="mb-6" style="color:#38bdf8;">Theorem 4: Periodicity Proof</h2>
+    <div style="background-color: #1e293b; padding: 1.5rem; margin-bottom: 1rem; border-left: 4px solid #10b981;">
+      <p class="text-lg" style="color:#cbd5e1; margin-bottom: 0.8rem;"><b>Theorem:</b> Every orbit is periodic with period T</p>
+      <p class="text-base" style="color:#cbd5e1; margin-bottom: 0.8rem;">
+        <b>Proof (Sketch):</b><br>
+        1. H(x,y) is strictly conserved: dH/dt = 0 on all trajectories<br>
+        2. Level sets {(x,y) : H(x,y) = c} are compact (closed &amp; bounded) for c near E₂<br>
+        3. Orbits lie on level sets → confined to compact sets<br>
+        4. Non-convergent trajectory on compact set in ℝ² → must be periodic<br>
+        5. Therefore: every orbit returns to initial condition after time T
+      </p>
+      <p class="text-lg" style="color:#38bdf8; font-weight: bold;">⟹ Periodicity guaranteed rigorously □</p>
+    </div>
+    <div style="background-color: #1e293b; padding: 1rem; border-left: 4px solid #f59e0b;">
+      <p class="text-lg" style="color:#f59e0b;"><b>Period Formula:</b></p>
+      <p class="text-base" style="color:#cbd5e1; font-family: monospace;">T(x₀, y₀) ≈ 2π/√(αγ) &nbsp; (approximate, depends on initial condition)</p>
+      <p class="text-sm" style="color:#94a3b8; margin-top: 0.5rem;">More precise: period increases with distance from E₂ on the phase plane</p>
+    </div>
+  </section>
+
+  <!-- Slide 8b: Phase Dynamics Visualization -->
+  <section class="slide p-16 col center" style="background-color: #0f172a; color: #f1f5f9;">
+    <h2 class="mb-4" style="color:#38bdf8;">The Four Phases of the Cycle</h2>
+    <svg width="90%" viewBox="0 0 600 480" style="background-color: #1e293b; border: 2px solid #38bdf8; margin: 0 auto; display: block;">
+      <!-- Title -->
+      <text x="300" y="30" font-size="24" fill="#38bdf8" text-anchor="middle" font-weight="bold">Counterclockwise Orbital Progression</text>
+      
+      <!-- Equilibrium point -->
+      <circle cx="300" cy="240" r="6" fill="#38bdf8"/>
+      
+      <!-- Orbit circle -->
+      <circle cx="300" cy="240" r="120" fill="none" stroke="#38bdf8" stroke-width="2"/>
+      
+      <!-- Phase 1: Max Trees (right, 0°) -->
+      <circle cx="420" cy="240" r="8" fill="#10b981"/>
+      <text x="420" y="245" font-size="16" fill="#cbd5e1" text-anchor="middle" font-weight="bold">①</text>
+      <text x="450" y="245" font-size="13" fill="#10b981" font-weight="bold">Max Trees</text>
+      <text x="450" y="263" font-size="11" fill="#cbd5e1">(dx/dt &gt; 0)</text>
+      
+      <!-- Phase 2: Max Lumberjacks (top, 90°) -->
+      <circle cx="300" cy="120" r="8" fill="#f59e0b"/>
+      <text x="300" y="125" font-size="16" fill="#cbd5e1" text-anchor="middle" font-weight="bold">②</text>
+      <text x="300" y="100" font-size="13" fill="#f59e0b" text-anchor="middle" font-weight="bold">Max Lumberjacks</text>
+      <text x="300" y="80" font-size="11" fill="#cbd5e1" text-anchor="middle">(dy/dt &gt; 0)</text>
+      
+      <!-- Phase 3: Min Trees (left, 180°) -->
+      <circle cx="180" cy="240" r="8" fill="#ef4444"/>
+      <text x="180" y="245" font-size="16" fill="#cbd5e1" text-anchor="middle" font-weight="bold">③</text>
+      <text x="100" y="245" font-size="13" fill="#ef4444" text-anchor="end" font-weight="bold">Min Trees</text>
+      <text x="100" y="263" font-size="11" fill="#cbd5e1" text-anchor="end">(dx/dt &lt; 0)</text>
+      
+      <!-- Phase 4: Min Lumberjacks (bottom, 270°) -->
+      <circle cx="300" cy="360" r="8" fill="#8b5cf6"/>
+      <text x="300" y="365" font-size="16" fill="#cbd5e1" text-anchor="middle" font-weight="bold">④</text>
+      <text x="300" y="390" font-size="13" fill="#8b5cf6" text-anchor="middle" font-weight="bold">Min Lumberjacks</text>
+      <text x="300" y="410" font-size="11" fill="#cbd5e1" text-anchor="middle">(dy/dt &lt; 0)</text>
+      
+      <!-- Directional arrows (counterclockwise) -->
+      <!-- ① → ② arrow (upper right quadrant) -->
+      <path d="M 410 250 Q 360 160 310 130" stroke="#cbd5e1" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+      
+      <!-- ② → ③ arrow (upper left quadrant) -->
+      <path d="M 290 130 Q 200 160 190 230" stroke="#cbd5e1" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+      
+      <!-- ③ → ④ arrow (lower left quadrant) -->
+      <path d="M 190 250 Q 200 340 290 360" stroke="#cbd5e1" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+      
+      <!-- ④ → ① arrow (lower right quadrant) -->
+      <path d="M 310 360 Q 360 340 410 250" stroke="#cbd5e1" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+      
+      <!-- Arrow marker definition -->
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 10 3, 0 6" fill="#cbd5e1"/>
+        </marker>
+      </defs>
+      
+      <!-- Cycle description at bottom -->
+      <text x="300" y="460" font-size="13" fill="#cbd5e1" text-anchor="middle" font-weight="bold">
+        Cyclical progression: ① → ② → ③ → ④ → ① (repeats eternally)
+      </text>
+    </svg>
+  </section>
+
+  <!-- Slide 9: Answer to the Question -->
+  <section class="slide p-16 col center" style="background-color: #020617; color: #f1f5f9;">
+    <h2 class="text-4xl mb-6" style="color:#38bdf8;">Answer: YES, Forever! ✓</h2>
+    <div style="max-width: 750px; text-align: left;">
+      <ul class="text-lg" style="color:#cbd5e1; margin-bottom: 1.5rem;">
+        <li><b>Conservation theorem:</b> first integral H(x,y) remains constant</li>
+        <li><b>Marginal stability:</b> center (purely imaginary eigenvalues)</li>
+        <li><b>Closed orbits:</b> no trajectory converges to extinction</li>
+        <li><b>Mathematical conclusion:</b> trees oscillate eternally with lumberjacks</li>
+      </ul>
+      <p class="text-xl" style="color:#38bdf8; font-weight: bold;">
+        ⟹ Christmas will always have trees (on average γ/δ)
+      </p>
+    </div>
+    <button onclick="alert('🎉 The mathematics guarantees it! Provided no external shocks disturb the system.');" style="margin-top: 1.5rem;">
+      🎉 Celebrate!
+    </button>
+  </section>
+
+  <!-- Slide 10: Conclusion & Limitations -->
+  <section class="slide p-16 col" style="background-color: #0f172a; color: #f1f5f9;">
+    <h2 class="mb-6" style="color:#38bdf8;">Conclusion & Limitations</h2>
+    <div class="row gap-lg">
+      <div class="fill-width">
+        <h3 style="color:#38bdf8; margin-bottom: 0.5rem;">Rigorous Results ✓</h3>
+        <ul class="text-lg" style="color:#cbd5e1;">
+          <li>✓ Closed orbits guaranteed</li>
+          <li>✓ Eternal periodic cycles</li>
+          <li>✓ No extinction possible</li>
+        </ul>
+      </div>
+      <div class="fill-width">
+        <h3 style="color:#38bdf8; margin-bottom: 0.5rem;">Model Limitations ⚠️</h3>
+        <ul class="text-lg" style="color:#cbd5e1;">
+          <li>⚠️ No external factors (climate, disease, humans)</li>
+          <li>⚠️ Continuous populations (not discrete)</li>
+          <li>⚠️ Linear interaction x·y (reality is nonlinear)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="interactive-box" style="margin-top: 1.5rem;">
+      <p style="color:#cbd5e1; margin-bottom: 0.5rem;"><b>📢 Discuss with your group:</b></p>
+      <p style="color:#cbd5e1;">What external factors could break the eternal cycle?</p>
+    </div>
+    <p class="text-sm mt-8" style="color:#94a3b8; text-align: center;">
+      Thank you! <b>Questions?</b>
+    </p>
+  </section>
+
+  <!-- Slide 11: Live Interactive Simulation -->
+  <section class="slide p-16 col" style="background-color: #020617; color: #f1f5f9; flex-direction: column;">
+    <h2 class="text-4xl mb-4" style="color:#38bdf8; text-align: center;">Live Interactive Simulation</h2>
+    <p class="text-lg mb-4" style="color:#cbd5e1; text-align: center;">Watch the predator-prey dynamics in action:</p>
+    <iframe src="http://jgaffuri.github.io/Vectag/sims/pp.html" style="flex: 1; border: 2px solid #38bdf8; margin-bottom: 1rem;"></iframe>
+    <p class="text-sm" style="color:#94a3b8; text-align: center;">
+      <b>🎮 Interactive:</b> Click & drag on the graph to set initial conditions. Observe how the orbits cycle eternally!
+    </p>
+  </section>
+
+</body>
+</html>
